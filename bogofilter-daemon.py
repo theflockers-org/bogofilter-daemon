@@ -21,7 +21,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys, os, re
+import sys, os, re, errno
 import setproctitle, socket, threading
 import SocketServer
 from subprocess import *
@@ -44,22 +44,21 @@ def start_procs():
 
 class ServerRequestHandler(SocketServer.BaseRequestHandler):
 
-    exit = False
-
     def handle(self):
 
-        #self.send_data('+ Bogofilter Daemon Ready!')
         self.send_data(banner)
-        while True:
-            if self.exit == False:
-                self.data = self.request.recv(1024)
-            else:
-                return
 
-            if len(self.data.strip()) == 0:
-                self.send_data('ERR: unknown command')
-            else:
-                self.parse_commands()
+        try:
+            while True:
+                self.data = self.request.recv(1024)
+
+                if len(self.data.strip()) == 0:
+                    self.send_data('ERR: unknown command')
+                else:
+                    self.parse_commands()
+        except IOError, e:
+            if e.errno == errno.EPIPE:
+                return
     
     def do_SCAN(self):
 
@@ -82,7 +81,6 @@ class ServerRequestHandler(SocketServer.BaseRequestHandler):
     
     def do_QUIT(self):
         self.send_data('Bye!')
-        self.exit = True
         self.request.close()
 
     def send_data(self, data):
