@@ -114,6 +114,7 @@ def run_as_user(user):
 
     user_info = pwd.getpwnam(user)
     uid = user_info[2]
+    os.putenv('HOME', user_info[5])
     os.setuid(uid)
 
 try:
