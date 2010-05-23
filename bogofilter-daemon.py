@@ -21,7 +21,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys, os, re, errno
+import sys, os, re, errno, pwd
 import setproctitle, socket, threading
 import SocketServer
 from subprocess import *
@@ -41,6 +41,8 @@ banner     = '+ Hello! Bogofilter Daemon is developed by Leandro Mendes (leandro
 def start_procs():
     for num in range(max_procs):
         bogofilter.append(Popen([bogofilter_path,'-l','-t','-b'], stdin=PIPE, stdout=PIPE, bufsize=4096))
+
+class NonRootException(Exception): pass
 
 class ServerRequestHandler(SocketServer.BaseRequestHandler):
 
@@ -106,11 +108,24 @@ class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     daemon_threads      = True
     allow_reuse_address = True
 
+def run_as_user(user):
+    if os.getuid() != 0:
+        raise NonRootException('this program must to be started as root')
+
+    user_info = pwd.getpwnam(user)
+    uid = user_info[2]
+    os.setuid(uid)
+
 try:
+
+    run_as_user('vuser')
+
     setproctitle.setproctitle('Bogofilter-Daemon (%i children)' % (max_procs))
     start_procs()
     server = Server((bind_address, bind_port), ServerRequestHandler)
     server.serve_forever()
+except KeyError, e:
+    print e
 
 except KeyboardInterrupt:
     sys.exit()
