@@ -48,7 +48,7 @@ class ServerRequestHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
 
-        self.send_data(banner)
+        # self.send_data(banner)
 
         try:
             while True:
