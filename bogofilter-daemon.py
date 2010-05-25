@@ -21,7 +21,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys, os, re, errno, pwd
+import sys, os, re, errno
+import pwd, shutil
 import setproctitle, socket, threading
 import SocketServer
 from subprocess import *
@@ -29,7 +30,8 @@ from subprocess import *
 max_procs  = 10
 index      = 0
 bogofilter = []
-
+run_user   = 'clamav'
+tmpdir     = '/tmp/mem'
 bogofilter_path = '/usr/bin/bogofilter'
 bind_address    = 'localhost'
 bind_port       = 4321
@@ -39,8 +41,15 @@ banner     = '+ Hello! Bogofilter Daemon is developed by Leandro Mendes (leandro
   * COMMANDS: SCAN [filepath] and QUIT\r\n'
 
 def start_procs():
+    user_info = pwd.getpwnam(run_user)
+    homedir = user_info[5]
     for num in range(max_procs):
-        bogofilter.append(Popen([bogofilter_path,'-l','-t','-b'], stdin=PIPE, stdout=PIPE, bufsize=4096))
+        wordlist_dir = '%s/bogofilter/%s/' % (tmpdir, num)
+        if os.path.exists(wordlist_dir) != True:
+            os.makedirs(wordlist_dir)     
+
+        shutil.copy( '%s/.bogofilter/wordlist.db' % (homedir), wordlist_dir )
+        bogofilter.append(Popen([bogofilter_path,'-l','-t','-b','-d', wordlist_dir], stdin=PIPE, stdout=PIPE, bufsize=4096))
 
 class NonRootException(Exception): pass
 
@@ -119,14 +128,15 @@ def run_as_user(user):
 
 try:
 
-    run_as_user('vuser')
+    run_as_user(run_user)
 
     setproctitle.setproctitle('Bogofilter-Daemon (%i children)' % (max_procs))
     start_procs()
     server = Server((bind_address, bind_port), ServerRequestHandler)
     server.serve_forever()
+except NonRootException, e:
+    print e
 except KeyError, e:
     print e
-
 except KeyboardInterrupt:
     sys.exit()
