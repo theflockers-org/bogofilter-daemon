@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 ''' 
     Bogofilter Daemon is a daemon wrapper to bogofilter in STDIN mode.
 
@@ -22,16 +22,17 @@
 '''
 
 import sys, os, re, errno
-import pwd, shutil
-import setproctitle, socket, threading
+import pwd, shutil, random
+import socket, threading
 import SocketServer
 from subprocess import *
 
 max_procs  = 10
 index      = 0
 bogofilter = []
-run_user   = 'clamav'
-tmpdir     = '/tmp/mem'
+locker     = []
+run_user   = 'root'
+tmpdir     = '/dev/shm'
 bogofilter_path = '/usr/bin/bogofilter'
 bind_address    = 'localhost'
 bind_port       = 4321
@@ -46,7 +47,7 @@ def start_procs():
     for num in range(max_procs):
         wordlist_dir = '%s/bogofilter/%s/' % (tmpdir, num)
         if os.path.exists(wordlist_dir) != True:
-            os.makedirs(wordlist_dir)     
+            os.makedirs(wordlist_dir)
 
         shutil.copy( '%s/.bogofilter/wordlist.db' % (homedir), wordlist_dir )
         bogofilter.append(Popen([bogofilter_path,'-l','-t','-b','-d', wordlist_dir], stdin=PIPE, stdout=PIPE, bufsize=4096))
@@ -70,26 +71,35 @@ class ServerRequestHandler(SocketServer.BaseRequestHandler):
         except IOError, e:
             if e.errno == errno.EPIPE:
                 return
-    
+
     def do_SCAN(self):
 
-        global index
+        global locker
 
         filepath = self.data.split(' ')[1].strip()
         if os.path.exists(filepath) == True:
-            if index == max_procs:
-                index = 0
-     
+            random.seed()
+            # print 'Selecting process'
+            index = random.randint(0, max_procs-1)
+            while index in locker:
+                # print 'Is locked:' + str(index)
+                index = random.randint(0, max_procs-1)
+
+            # print 'Locking: '+ str(index)
+            locker.append(index)
+
             bogofilter[index].stdin.write(filepath + "\n")
             bogofilter[index].stdin.flush()
             output = bogofilter[index].stdout.readline()
             bogofilter[index].stdout.flush()
             self.send_data(output)
-    
-            index = index + 1
+
+            #print 'Removing: ' + str(index)
+            if index in locker:
+                locker.remove(index)
         else:
             self.send_data('%s: no such file' % (filepath))
-    
+
     def do_QUIT(self):
         self.send_data('Bye!')
         self.request.close()
@@ -112,8 +122,8 @@ class ServerRequestHandler(SocketServer.BaseRequestHandler):
             eval(method)
         else:
             self.send_data('ERR: unknown command')
-        
-class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer): 
+
+class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     daemon_threads      = True
     allow_reuse_address = True
 
@@ -130,7 +140,6 @@ try:
 
     run_as_user(run_user)
 
-    setproctitle.setproctitle('Bogofilter-Daemon (%i children)' % (max_procs))
     start_procs()
     server = Server((bind_address, bind_port), ServerRequestHandler)
     server.serve_forever()
@@ -140,3 +149,4 @@ except KeyError, e:
     print e
 except KeyboardInterrupt:
     sys.exit()
+                                                                                                                                 
