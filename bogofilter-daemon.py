@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 ''' 
     Bogofilter Daemon is a daemon wrapper to bogofilter in STDIN mode.
 
@@ -25,17 +25,33 @@ import sys, os, re, errno
 import pwd, shutil, random
 import socket, threading
 import SocketServer
+import ConfigParser
 from subprocess import *
 
-max_procs  = 10
-index      = 0
+
+
+# get configs
+
+config = ConfigParser.ConfigParser()
+try:
+    config.readfp(open('/etc/bogofilter-daemon.conf'))
+except Exception, e:
+    print str(e)
+    sys.exit()
+
+config.get('daemon','bogofilter_path')
+
+max_procs  = int(config.get('daemon', 'max_procs'))
+index      = int(config.get('daemon', 'index'))
+run_user   = config.get('daemon', 'run_user')
+tmpdir     = config.get('daemon', 'tmpdir')
+bogofilter_path = config.get('daemon', 'bogofilter_path')
+bind_address    = config.get('daemon', 'bind_address')
+bind_port       = int(config.get('daemon', 'bind_port'))
+
+
 bogofilter = []
 locker     = []
-run_user   = 'root'
-tmpdir     = '/dev/shm'
-bogofilter_path = '/usr/bin/bogofilter'
-bind_address    = 'localhost'
-bind_port       = 4321
 
 banner     = '+ Hello! Bogofilter Daemon is developed by Leandro Mendes (leandro at gmail dot com) and is a software\r\n\
   with no warranty and no support. Use it by you own. First, don\'t forget to train you bogofilter!\r\n\
@@ -124,6 +140,7 @@ class ServerRequestHandler(SocketServer.BaseRequestHandler):
             self.send_data('ERR: unknown command')
 
 class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+#class Server(SocketServer.ForkingMixIn, SocketServer.TCPServer): 
     daemon_threads      = True
     allow_reuse_address = True
 
@@ -140,13 +157,17 @@ try:
 
     run_as_user(run_user)
 
+    # setproctitle.setproctitle('Bogofilter-Daemon (%i children)' % (max_procs))
     start_procs()
     server = Server((bind_address, bind_port), ServerRequestHandler)
     server.serve_forever()
+except IOError, e:
+    print str(e)
+    sys.exit(1)
 except NonRootException, e:
     print e
 except KeyError, e:
     print e
 except KeyboardInterrupt:
     sys.exit()
-                                                                                                                                 
+
