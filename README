@@ -3,7 +3,7 @@
     It opens max_procs instances of bogofilter in STDIN mode and escales 
     the inputs for each instance.
 
-    Author: Leandro Mendes <leandro at gmail dot com>
+    Author: Leandro Mendes <theflockers at gmail dot com>
     --------------------------------------------------------------------
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
