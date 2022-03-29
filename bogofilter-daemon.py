@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/python27
 ''' 
     Bogofilter Daemon is a daemon wrapper to bogofilter in STDIN mode.
 

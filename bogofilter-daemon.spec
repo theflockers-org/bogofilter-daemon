@@ -5,7 +5,7 @@ Summary:        Python Bogofilter Daemon
 Group:          System Environment/Base
 License:        GPLv2+
 Source0:        bogofilter-daemon.py 
-Source1:        bogofilter-daemon.spec
+Source1:        bogofilter-daemon.conf
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 
@@ -19,14 +19,14 @@ It opens max_procs instances of bogofilter in STDIN mode and escales
 the inputs for each instance.
 
 %prep
-%setup -n %{name}-%{version} -q
+#%setup -c -n %{name}-%{version} -T 
 
 %install
 %{__rm} -fr $RPM_BUILD_ROOT
 %{__mkdir} -p $RPM_BUILD_ROOT/usr/sbin
 %{__mkdir} -p $RPM_BUILD_ROOT/etc
-%{__install} -Dp -m0755 $RPM_BUILD_DIR/%{name}-%{version}/bogofilter-daemon.py $RPM_BUILD_ROOT/usr/sbin
-%{__install} -Dp -m0755 $RPM_BUILD_DIR/%{name}-%{version}/bogofilter-daemon.conf $RPM_BUILD_ROOT/etc
+%{__install} -Dp -m0755 %{SOURCE0} $RPM_BUILD_ROOT/usr/sbin
+%{__install} -Dp -m0644 %{SOURCE1} $RPM_BUILD_ROOT/etc
 
 %clean
 rm -rf $RPM_BUILD_ROOT
