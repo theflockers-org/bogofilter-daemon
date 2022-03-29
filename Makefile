@@ -1,6 +1,6 @@
 name=bogofilter-daemon
 version=0.2
-rpmbuilddir=/root/rpmbuild
+rpmbuilddir=~/rpmbuild
 
 all: compress build
 compress:
