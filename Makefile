@@ -6,4 +6,6 @@ compress:
 	mkdir -p rpmbuild/ SOURCES/
 	tar cjf SOURCES/${name}-${version}.tar.bz2 --exclude=.git . 
 build:
-	rpmbuild -ba bogofilter-daemon.spec --define "_topdir $(pwd)/rpmbuild" --define "_sourcedir $(pwd)/SOURCES"
+	ls
+	pwd
+	rpmbuild -ba bogofilter-daemon.spec --define "_topdir ./rpmbuild" --define "_sourcedir ./SOURCES"
