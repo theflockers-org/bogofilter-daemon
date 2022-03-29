@@ -4,7 +4,8 @@ Release:        1
 Summary:        Python Bogofilter Daemon
 Group:          System Environment/Base
 License:        GPLv2+
-Source0:        %{name}-%{version}.tar.bz2
+Source0:        bogofilter-daemon.py 
+Source1:        bogofilter-daemon.spec
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 
@@ -24,10 +25,8 @@ the inputs for each instance.
 %{__rm} -fr $RPM_BUILD_ROOT
 %{__mkdir} -p $RPM_BUILD_ROOT/usr/sbin
 %{__mkdir} -p $RPM_BUILD_ROOT/etc
-%{__mkdir} -p $RPM_BUILD_ROOT/etc/init.d
 %{__install} -Dp -m0755 $RPM_BUILD_DIR/%{name}-%{version}/bogofilter-daemon.py $RPM_BUILD_ROOT/usr/sbin
 %{__install} -Dp -m0755 $RPM_BUILD_DIR/%{name}-%{version}/bogofilter-daemon.conf $RPM_BUILD_ROOT/etc
-%{__install} -Dp -m0755 $RPM_BUILD_DIR/%{name}-%{version}/bogofilter-daemon.init $RPM_BUILD_ROOT/etc/init.d/bogofilter-daemon
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -35,7 +34,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 /usr/sbin/bogofilter-daemon.py
-/etc/init.d/bogofilter-daemon
 /etc/bogofilter-daemon.conf
 
 %changelog
