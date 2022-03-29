@@ -19,7 +19,7 @@ It opens max_procs instances of bogofilter in STDIN mode and escales
 the inputs for each instance.
 
 %prep
-#%setup -c -n %{name}-%{version} -T 
+%setup -c -n %{name}-%{version} -T 
 
 %install
 %{__rm} -fr $RPM_BUILD_ROOT
