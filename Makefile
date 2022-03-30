@@ -5,5 +5,4 @@ builddir=~/build
 all: build
 
 build:
-	cp bogofilter-daemon.{py,conf,spec} ${builddir}/SOURCES/
-	rpmbuild -b bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
+	rpmbuild -ba bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
