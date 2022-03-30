@@ -5,5 +5,5 @@ builddir=~/build
 all: build
 
 build:
-	rpmbuild -ba bogofilter-daemon.spec
+	cp ./SOURCES/${name}-${version}.tar.gz ${builddir}/SOURCES/
 	#rpmbuild -ba bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
