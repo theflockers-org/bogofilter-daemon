@@ -5,4 +5,5 @@ builddir=~/build
 all: build
 
 build:
-	rpmbuild -ba bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
+	rpmbuild -ba bogofilter-daemon.spec
+	#rpmbuild -ba bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
