@@ -6,4 +6,4 @@ all: build
 
 build:
 	cp bogofilter-daemon.{py,conf,spec} ${builddir}/SOURCES/
-	rpmbuild -ba bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
+	rpmbuild -b bogofilter-daemon.spec --define "_sourcedir $(shell pwd)"
